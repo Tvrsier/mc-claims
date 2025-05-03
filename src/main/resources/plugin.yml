@@ -1,0 +1,9 @@
+name: mc-claims
+version: '1.0-SNAPSHOT'
+main: tvrsier.eu.mclaims.McClaims
+api-version: '1.20'
+prefix:
+  mc-claims:
+authors: [ Tvrsier ]
+description: This plugin provides utilities for team managements and claims
+website: tvrsier.eu
