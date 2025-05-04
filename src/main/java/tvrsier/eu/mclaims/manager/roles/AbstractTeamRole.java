@@ -24,4 +24,7 @@ public abstract class AbstractTeamRole implements TeamRole{
 
     @Override
     public boolean canAllowBuilding() { return false; }
+
+    @Override
+    public boolean canChangeTeamRole() { return false; }
 }

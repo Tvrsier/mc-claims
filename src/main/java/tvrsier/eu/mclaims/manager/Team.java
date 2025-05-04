@@ -15,12 +15,40 @@ public class Team {
     private final UUID ownerId;
     private String name;
 
+    // Team default settings, saved and readed from file
+    private boolean isBuildingAllowed;
+    private boolean isVisitorAllowed;
+    private boolean canManageSubclaims;
+    private boolean canAcceptVisitors;
+    private boolean canInvite;
+    private boolean canChangeTeamName;
+    private boolean canChangeTeamRole;
+    private boolean canBuild;
+
     private final Map<UUID, TeamRole> roles = new ConcurrentHashMap<>();
 
     public Team(UUID id, UUID ownerId, String name) {
         this.id = id;
         this.ownerId = ownerId;
         this.name = name;
+        roles.put(ownerId, new OwnerRole(id));
+    }
+
+    public Team(UUID id, UUID ownerId, String name, boolean isBuildingAllowed, boolean isVisitorAllowed,
+                boolean canManageSubclaims, boolean canAcceptVisitors, boolean canInvite, boolean canChangeTeamName,
+                boolean canChangeTeamRole, boolean canBuild) {
+        this.id = id;
+        this.ownerId = ownerId;
+        this.name = name;
+        this.isBuildingAllowed = isBuildingAllowed;
+        this.isVisitorAllowed = isVisitorAllowed;
+        this.canManageSubclaims = canManageSubclaims;
+        this.canAcceptVisitors = canAcceptVisitors;
+        this.canInvite = canInvite;
+        this.canChangeTeamName = canChangeTeamName;
+        this.canChangeTeamRole = canChangeTeamRole;
+        this.canBuild = canBuild;
+
         roles.put(ownerId, new OwnerRole(id));
     }
 
@@ -67,5 +95,51 @@ public class Team {
         Set<UUID> members = getAllMembers();
         if(!members.contains(member)) return null;
         return roles.get(member);
+    }
+
+    public void setDefaultPermission(String pname, boolean b) {
+        switch (pname.toLowerCase()) {
+            case "isbuildingallowed" -> isBuildingAllowed = b;
+            case "isvisitorallowed" -> isVisitorAllowed = b;
+            case "canmanagesubclaims" -> canManageSubclaims = b;
+            case "canacceptvisitors" -> canAcceptVisitors = b;
+            case "caninvite" -> canInvite = b;
+            case "canchangeteamname" -> canChangeTeamName = b;
+            case "canchangeteamrole" -> canChangeTeamRole = b;
+            case "canbuild" -> canBuild = b;
+        }
+        // TeamManager.saveTeam(this);
+    }
+
+    public boolean isBuildingAllowed() {
+        return isBuildingAllowed;
+    }
+
+    public boolean isVisitorAllowed() {
+        return isVisitorAllowed;
+    }
+
+    public boolean isCanManageSubclaims() {
+        return canManageSubclaims;
+    }
+
+    public boolean isCanAcceptVisitors() {
+        return canAcceptVisitors;
+    }
+
+    public boolean isCanInvite() {
+        return canInvite;
+    }
+
+    public boolean isCanChangeTeamName() {
+        return canChangeTeamName;
+    }
+
+    public boolean isCanChangeTeamRole() {
+        return canChangeTeamRole;
+    }
+
+    public boolean isCanBuild() {
+        return canBuild;
     }
 }

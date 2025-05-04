@@ -11,7 +11,7 @@ public class MemberRole extends AbstractTeamRole {
         super(teamId);
     }
 
-    public MemberRole canBuild(boolean b) {
+    public MemberRole withCanBuild(boolean b) {
         canBuild = b;
         return this;
     }
@@ -21,7 +21,7 @@ public class MemberRole extends AbstractTeamRole {
         return this;
     }
 
-    public MemberRole canAcceptVisitors(boolean b) {
+    public MemberRole withCanAcceptVisitors(boolean b) {
         this.canAcceptVisitors = b;
         return this;
     }

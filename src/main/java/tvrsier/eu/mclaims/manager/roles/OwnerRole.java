@@ -14,6 +14,7 @@ public class OwnerRole extends AbstractTeamRole{
     @Override public boolean canAcceptVisitors()   { return true; }
     @Override public boolean canManageSubclaims()  { return true; }
     @Override public boolean canChangeTeamName()   { return true; }
-
+    @Override public boolean canAllowBuilding()    { return true; }
+    @Override public boolean canChangeTeamRole()   { return true; }
 
 }
