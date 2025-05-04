@@ -27,8 +27,6 @@ public class MemberRole extends AbstractTeamRole {
     }
 
     @Override public boolean canInvite()            { return canInvite; }
-    @Override public boolean canRemoveMember()      { return false; }
-    @Override public boolean canDeleteTeam()        { return false; }
     @Override public boolean canBuild()             { return canBuild; }
     @Override public boolean canAcceptVisitors()    { return canAcceptVisitors; }
 

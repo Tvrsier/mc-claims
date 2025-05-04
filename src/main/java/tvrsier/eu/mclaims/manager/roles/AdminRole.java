@@ -40,7 +40,6 @@ public class AdminRole extends AbstractTeamRole{
 
     @Override public boolean canInvite()           { return true; }
     @Override public boolean canRemoveMember()     { return canRemoveMember; }
-    @Override public boolean canDeleteTeam()       { return false; }
     @Override public boolean canBuild()            { return true; }
     @Override public boolean canAcceptVisitors()   { return true; }
     @Override public boolean canManageSubclaims()  { return allowSubclaimManagement; }
