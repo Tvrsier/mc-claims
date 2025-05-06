@@ -20,7 +20,6 @@ public final class McClaims extends JavaPlugin {
         } catch (Exception e) {
             getLogger().severe("Failed to initialize TeamManager: " + e.getMessage());
             getServer().getPluginManager().disablePlugin(this);
-            return;
         }
     }
 

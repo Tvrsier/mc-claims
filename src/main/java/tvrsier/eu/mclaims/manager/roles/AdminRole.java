@@ -7,7 +7,7 @@ public class AdminRole extends AbstractTeamRole{
     private boolean canChangeTeamName;
     private boolean canAllowBuilding;
     private boolean canRemoveMember;
-    private boolean canChangeTeamRole;
+    private boolean canChangeMemberRole;
 
     public AdminRole(UUID teamId) {
         super(teamId);
@@ -33,8 +33,8 @@ public class AdminRole extends AbstractTeamRole{
         return this;
     }
 
-    public AdminRole withChangeTeamRole(boolean b) {
-        canChangeTeamRole = b;
+    public AdminRole withChangeMemberRole(boolean b) {
+        canChangeMemberRole = b;
         return this;
     }
 
@@ -45,11 +45,21 @@ public class AdminRole extends AbstractTeamRole{
     @Override public boolean canManageSubclaims()  { return allowSubclaimManagement; }
     @Override public boolean canChangeTeamName()   { return canChangeTeamName; }
     @Override public boolean canAllowBuilding()    { return canAllowBuilding ;}
-    @Override public boolean canChangeTeamRole()   { return canChangeTeamRole; }
+    @Override public boolean canChangeMemberRole()   { return canChangeMemberRole; }
 
     public void setClaimManagement(boolean b) { this.allowSubclaimManagement = b; }
 
     public void setChangeTeamName(boolean b) { this.canChangeTeamName = b; }
 
     public void setAllowBuilding(boolean b) { this.canAllowBuilding = b; }
+
+    public void setAllowSubclaimManagement(boolean b) { this.allowSubclaimManagement = b; }
+
+    public void setCanChangeTeamName(boolean b) { this.canChangeTeamName = b; }
+
+    public void setCanAllowBuilding(boolean b) { this.canAllowBuilding = b; }
+
+    public void setCanRemoveMember(boolean b) { this.canRemoveMember = b; }
+
+    public void setCanChangeMemberRole(boolean b) { this.canChangeMemberRole = b; }
 }

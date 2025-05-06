@@ -7,9 +7,7 @@ import tvrsier.eu.mclaims.manager.roles.*;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Map;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class TeamManager {
@@ -87,7 +85,7 @@ public class TeamManager {
                                     .withCanChangeTeamName(changeTeamName)
                                     .withAllowBuilding(canAllowBuilding)
                                     .withRemoveMember(canRemoveMember)
-                                    .withChangeTeamRole(changeTeamRole);
+                                    .withChangeMemberRole(changeTeamRole);
                         }
                         case "MEMBER" -> {
                             boolean pCanBuild = r.getBoolean("can-build");
@@ -126,5 +124,75 @@ public class TeamManager {
         for(Team team: teamsById.values()) {
             for(UUID member: team.getAllMembers()) teamsByMember.put(member, team);
         }
+    }
+
+    public static Team getTeamFor(UUID playerId) {
+        return teamsByMember.get(playerId);
+    }
+
+    public static Team getTeam(UUID ownerId, String name) throws IOException {
+        UUID teamId = UUID.randomUUID();
+        Team team = new Team(teamId, ownerId, name);
+        teamsByMember.put(ownerId, team);
+        saveTeam(team);
+        return team;
+    }
+
+    public static void saveTeam(Team team) throws IOException {
+        String base = "teams." + team.getId() + ".";
+        yaml.set(base + "owner", team.getOwnerId().toString());
+        yaml.set(base + "name", team.getName());
+        yaml.set(base + "defaults.building-allowed", team.isBuildingAllowed());
+        yaml.set(base + "defaults.visitor-allowed", team.isVisitorAllowed());
+        yaml.set(base + "defaults.can-manage-subclaims", team.isCanManageSubclaims());
+        yaml.set(base + "defaults.can-accept-visitors", team.isCanAcceptVisitors());
+        yaml.set(base + "defaults.can-invite", team.isCanInvite());
+        yaml.set(base + "defaults.can-change-team-name", team.isCanChangeTeamName());
+        yaml.set(base + "defaults.can-change-team-role", team.isCanChangeTeamRole());
+        yaml.set(base + "defaults.can-build", team.isCanBuild());
+
+        yaml.set(base + "roles", null);
+        ConfigurationSection roleSec = yaml.createSection(base + "roles");
+        for(UUID memberId: team.getAllMembers()) {
+            TeamRole role = team.getRole(memberId);
+            String rbase = base + "roles." + memberId + ".";
+            yaml.set(rbase + "type", role.getClass().getSimpleName().toUpperCase());
+            if(role instanceof AdminRole ar) {
+                yaml.set(rbase + "allow-subclaim-management", ar.canManageSubclaims());
+                yaml.set(rbase + "can-change-team-name", ar.canChangeTeamName());
+                yaml.set(rbase + "can-allow-building", ar.canAllowBuilding());
+                yaml.set(rbase + "can-remove-member", ar.canRemoveMember());
+                yaml.set(rbase + "can-change-team-role", ar.canChangeMemberRole());
+            } else if (role instanceof MemberRole mr) {
+                yaml.set(rbase + "can-build", mr.canBuild());
+                yaml.set(rbase + "can-invite", mr.canInvite());
+                yaml.set(rbase + "can-accept-visitors", mr.canAcceptVisitors());
+            } else if (role instanceof VisitorRole vr) {
+                long expireAt = System.currentTimeMillis() / 1000 + vr.getLifetimeSeconds();
+                yaml.set(rbase + "expire-at", expireAt);
+            }
+        }
+        yaml.save(teamsFile);
+    }
+
+    public static void saveAll() throws IOException {
+        for(Team team: teamsById.values()) {
+            saveTeam(team);
+        }
+    }
+
+    public static void deleteTeam(UUID teamId) throws IOException {
+        Team team = teamsById.remove(teamId);
+        if(team != null) {
+            for(UUID member: team.getAllMembers()) {
+                teamsByMember.remove(member);
+            }
+            yaml.set("teams." + teamId, null);
+            yaml.save(teamsFile);
+        }
+    }
+
+    public static Collection<Team> getAllTeams() {
+        return Collections.unmodifiableCollection(teamsById.values());
     }
 }

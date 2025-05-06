@@ -14,7 +14,7 @@ public interface TeamRole {
     boolean canManageSubclaims();
     boolean canChangeTeamName();
     boolean canAllowBuilding();
-    boolean canChangeTeamRole();
+    boolean canChangeMemberRole();
 
     default long getLifetimeSeconds() {
         return -1;

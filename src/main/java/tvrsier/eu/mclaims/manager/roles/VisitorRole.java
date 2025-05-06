@@ -13,7 +13,7 @@ public class VisitorRole extends AbstractTeamRole {
         this.lifetimeSeconds = seconds;
         return this;
     }
-    
+
     @Override public long getLifetimeSeconds()     { return lifetimeSeconds; }
 
     public void extendLifetime(long seconds) {
