@@ -1,13 +1,13 @@
 package tvrsier.eu.mclaims.manager;
 
-import tvrsier.eu.mclaims.manager.roles.OwnerRole;
-import tvrsier.eu.mclaims.manager.roles.TeamRole;
+import tvrsier.eu.mclaims.manager.roles.*;
 
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
 public class Team {
@@ -24,8 +24,21 @@ public class Team {
     private boolean canChangeTeamName;
     private boolean canChangeTeamRole;
     private boolean canBuild;
+    private boolean canAllowBuilding;
 
     private final Map<UUID, TeamRole> roles = new ConcurrentHashMap<>();
+
+    private static final Map<Permissions, BiConsumer<Team, Boolean>> DEFAULT_PERMISSIONS = Map.of(
+            Permissions.BUILDING_ALLOWED, (team, val) -> team.isBuildingAllowed = val,
+            Permissions.ACCEPT_VISITORS, (team, val) -> team.canAcceptVisitors = val,
+            Permissions.CHANGE_TEAM_NAME, (team, val) -> team.canChangeTeamName = val,
+            Permissions.CHANGE_TEAM_ROLE, (team, val) -> team.canChangeTeamRole = val,
+            Permissions.INVITE, (team, val) -> team.canInvite = val,
+            Permissions.MANAGE_SUBCLAIMS, (team, val) -> team.canManageSubclaims = val,
+            Permissions.VISITOR_ALLOWED, (team, val) -> team.isVisitorAllowed = val,
+            Permissions.BUILD, (team, val) -> team.canBuild = val,
+            Permissions.ALLOW_BUILDING, (team, val) -> team.canAllowBuilding = val
+    );
 
     public Team(UUID id, UUID ownerId, String name) {
         this.id = id;
@@ -36,7 +49,7 @@ public class Team {
 
     public Team(UUID id, UUID ownerId, String name, boolean isBuildingAllowed, boolean isVisitorAllowed,
                 boolean canManageSubclaims, boolean canAcceptVisitors, boolean canInvite, boolean canChangeTeamName,
-                boolean canChangeTeamRole, boolean canBuild) {
+                boolean canChangeTeamRole, boolean canBuild, boolean canAllowBuilding) {
         this.id = id;
         this.ownerId = ownerId;
         this.name = name;
@@ -48,6 +61,7 @@ public class Team {
         this.canChangeTeamName = canChangeTeamName;
         this.canChangeTeamRole = canChangeTeamRole;
         this.canBuild = canBuild;
+        this.canAllowBuilding = canAllowBuilding;
 
         roles.put(ownerId, new OwnerRole(id));
     }
@@ -67,11 +81,24 @@ public class Team {
     }
 
     public void addPlayer(UUID playerId, TeamRole role) {
-        if(playerId.equals(ownerId)) return;
+        if (playerId.equals(ownerId)) return;
         Set<UUID> members = getAllMembers();
-        if(members.contains(playerId)) return;
-        roles.put(playerId, role);
-    }
+        if (members.contains(playerId)) return;
+
+        if (role instanceof MemberRole mr) {
+            if (!mr.canBuild()) mr.withCanBuild(isBuildingAllowed);
+            if (!mr.canAcceptVisitors()) mr.withCanAcceptVisitors(canAcceptVisitors);
+            if (!mr.canInvite()) mr.withCanInvite(canInvite);
+            roles.put(playerId, mr);
+        } else if (role instanceof AdminRole ar) {
+            if (!ar.canAllowBuilding()) ar.withAllowBuilding(canAllowBuilding);
+            if (!ar.canManageSubclaims()) ar.withAllowSubClaim(canManageSubclaims);
+            if (!ar.canChangeTeamName()) ar.withCanChangeTeamName(canChangeTeamName);
+            if (!ar.canRemoveMember()) ar.withRemoveMember(canChangeTeamRole);
+            if (!ar.canChangeMemberRole()) ar.withChangeMemberRole(canChangeTeamRole);
+            roles.put(playerId, ar);
+        }
+}
 
     public void removeMember(UUID playerId) {
         if(playerId.equals(ownerId)) return;
@@ -97,18 +124,13 @@ public class Team {
         return roles.get(member);
     }
 
-    public void setDefaultPermission(String pname, boolean b) {
-        switch (pname.toLowerCase()) {
-            case "isbuildingallowed" -> isBuildingAllowed = b;
-            case "isvisitorallowed" -> isVisitorAllowed = b;
-            case "canmanagesubclaims" -> canManageSubclaims = b;
-            case "canacceptvisitors" -> canAcceptVisitors = b;
-            case "caninvite" -> canInvite = b;
-            case "canchangeteamname" -> canChangeTeamName = b;
-            case "canchangeteamrole" -> canChangeTeamRole = b;
-            case "canbuild" -> canBuild = b;
+    public void setDefaultPermission(Permissions pname, boolean b) throws Exception {
+        BiConsumer<Team, Boolean> setter = DEFAULT_PERMISSIONS.get(pname);
+        if(setter == null) {
+            throw new IllegalArgumentException("Permission " + pname + " not found");
         }
-        // TeamManager.saveTeam(this);
+        setter.accept(this, b);
+        TeamManager.saveTeam(this);
     }
 
     public boolean isBuildingAllowed() {
@@ -142,4 +164,6 @@ public class Team {
     public boolean isCanBuild() {
         return canBuild;
     }
+
+    public boolean canAllowBuilding() { return canAllowBuilding; }
 }
